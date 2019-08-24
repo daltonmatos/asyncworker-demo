@@ -1,0 +1,30 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+async-worker = {editable = true,path = "./../async-worker"}
+pydantic = "==0.28"
+
+[dev-packages]
+asynctest = "==0.12.1"
+pytest = "==4.0.1"
+pytest-cov = "==2.6.0"
+codecov = "==1.0.0"
+mypy = "==0.630"
+#black = "==18.9b0"
+isort = "==4.3.15"
+asyncworker-demo = {editable = true,path = "."}
+ipdb = "==0.11"
+
+[requires]
+python_version = "3.7"
+
+[scripts]
+test = "py.test -v --cov=./ --cov-report term-missing -v"
+lint = "mypy ./ --ignore-missing-imports"
+fmt = "black --py36 -v --line-length 80 ."
+fmt-check = "black --py36 -v --line-length 80 --check ."
+isort-fmt = "isort --apply --recursive --line-width 80 --use-parentheses --no-inline-sort --multi-line 3 --trailing-comma ."
+isort-check = "isort --check-only --recursive --line-width 80 --use-parentheses --no-inline-sort --multi-line 3 --trailing-comma ."
