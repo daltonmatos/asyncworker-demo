@@ -1,9 +1,7 @@
-import abc
-from typing import Dict, Union, Type
-
 from aiohttp import web
-from pydantic import BaseModel
 
+from app.resources.base import Resource
+from app.resources.user import UserResource
 from asyncworker import App, RouteTypes
 
 app = App()
@@ -31,47 +29,6 @@ def content_negotiation(handler):
         return result
 
     return _wrap
-
-
-class VersionedResource(BaseModel, abc.ABC):
-    @staticmethod
-    def transform_from(base: "Resource") -> "VersionedResource":
-        raise NotImplementedError
-
-
-class Resource(BaseModel, abc.ABC):
-    @staticmethod
-    def media_types() -> Dict[str, Type[VersionedResource]]:
-        return {}
-
-
-class UserResource(Resource):
-    id: int
-    name: str
-    phone: str
-
-    @staticmethod
-    def media_types() -> Dict[str, Type[VersionedResource]]:
-        return {
-            "application/vnd.app.user.v1+json": UserResourceV1,
-            "application/vnd.app.user.v2+json": UserResourceV2,
-        }
-
-
-class UserResourceV1(VersionedResource):
-    name: str
-
-    @staticmethod
-    def transform_from(base: UserResource) -> "UserResourceV1":
-        return UserResourceV1(name=base.name)
-
-
-class UserResourceV2(VersionedResource):
-    phone: str
-
-    @staticmethod
-    def transform_from(base: UserResource) -> "UserResourceV2":
-        return UserResourceV2(phone=base.phone)
 
 
 @app.route(["/"], type=RouteTypes.HTTP, methods=["GET"])
