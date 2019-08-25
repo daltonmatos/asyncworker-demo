@@ -1,12 +1,14 @@
 import abc
-from typing import Dict, Type
+from typing import Dict, Type, Generic, TypeVar
 
 from pydantic import BaseModel
 
+T = TypeVar("T")
 
-class VersionedResource(BaseModel, abc.ABC):
+
+class VersionedResource(Generic[T], BaseModel):
     @staticmethod
-    def transform_from(base: "Resource") -> "VersionedResource":
+    def transform_from(base: T) -> "VersionedResource":
         raise NotImplementedError
 
 
