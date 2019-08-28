@@ -18,7 +18,7 @@ class UserResource(Resource):
         }
 
 
-class UserResourceV1(VersionedResource):
+class UserResourceV1(VersionedResource[UserResource]):
     name: str
 
     @staticmethod
@@ -26,7 +26,7 @@ class UserResourceV1(VersionedResource):
         return UserResourceV1(name=base.name)
 
 
-class UserResourceV2(VersionedResource):
+class UserResourceV2(VersionedResource[UserResource]):
     phone: str
 
     @staticmethod
