@@ -1,6 +1,8 @@
+import sys
 from typing import Dict, Type
 
 from pydantic import BaseModel
+from pydantic.generics import GenericModel
 
 from app.resources.base import Resource, VersionedResource
 
@@ -18,17 +20,35 @@ class UserResource(Resource):
         }
 
 
-class UserResourceV1(VersionedResource[UserResource]):
-    name: str
+if sys.version_info[1] >= 7:
 
-    @staticmethod
-    def transform_from(base: UserResource) -> "UserResourceV1":
-        return UserResourceV1(name=base.name)
+    class UserResourceV1(VersionedResource[UserResource]):
+        name: str
+
+        @staticmethod
+        def transform_from(base: UserResource) -> "UserResourceV1":
+            return UserResourceV1(name=base.name)
+
+    class UserResourceV2(VersionedResource[UserResource]):
+        phone: str
+
+        @staticmethod
+        def transform_from(base: UserResource) -> "UserResourceV2":
+            return UserResourceV2(phone=base.phone)
 
 
-class UserResourceV2(VersionedResource[UserResource]):
-    phone: str
+else:
 
-    @staticmethod
-    def transform_from(base: UserResource) -> "UserResourceV2":
-        return UserResourceV2(phone=base.phone)
+    class UserResourceV1(VersionedResource):
+        name: str
+
+        @staticmethod
+        def transform_from(base: UserResource) -> "UserResourceV1":
+            return UserResourceV1(name=base.name)
+
+    class UserResourceV2(VersionedResource):
+        phone: str
+
+        @staticmethod
+        def transform_from(base: UserResource) -> "UserResourceV2":
+            return UserResourceV2(phone=base.phone)
