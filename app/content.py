@@ -29,8 +29,7 @@ def content_negotiation(handler):
         try:
             result = await call_http_handler(request, handler)
         except HTTPException as http_exc:
-            status_code = types_dict.get(http_exc.__class__, HTTPStatus.OK)
-            return web.json_response(http_exc.dict(), status=status_code)
+            return web.json_response(http_exc.dict(), status=http_exc.status)
 
         if isinstance(result, Resource):
             status_code = types_dict.get(result.__class__, HTTPStatus.OK)

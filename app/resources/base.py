@@ -1,4 +1,5 @@
 import sys
+from http import HTTPStatus
 from typing import Dict, Type, Generic, TypeVar
 
 from pydantic import BaseModel
@@ -29,6 +30,7 @@ class Resource(BaseModel):
 
 
 class HTTPException(Exception):
+    status = -1
 
     error: str
 
@@ -40,4 +42,4 @@ class HTTPException(Exception):
 
 
 class NotFoundException(HTTPException):
-    pass
+    status = HTTPStatus.NOT_FOUND

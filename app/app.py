@@ -39,7 +39,7 @@ async def users_2() -> HTTP[Status.ACCEPTED, UserResource]:
 @content_negotiation
 async def accounts(
     request: web.Request
-) -> Union[HTTP[Status.OK, Account], HTTP[Status.NOT_FOUND, NotFoundException]]:
+) -> Union[HTTP[Status.OK, Account], NotFoundException]:
     what = request.match_info["what"]
     if what == "e":
         raise NotFoundException(error="Resource not found")
