@@ -1,3 +1,4 @@
+import json
 from functools import partial
 from typing import Union
 
@@ -7,6 +8,7 @@ from app.content import content_negotiation
 from app.http.status import Status
 from app.resources.account import Account
 from app.resources.base import NotFoundException
+from app.resources.charset import CharsetResource
 from app.resources.user import UserResource
 from app.types.http import HTTP
 from asyncworker import App, RouteTypes
@@ -48,3 +50,28 @@ async def accounts(
         v = 1 / 0
 
     return Account(id=1, name="Account")
+
+
+@app.http(["/charsets/1"], methods=["GET"])
+@content_negotiation
+async def charsets(request: web.Request) -> CharsetResource:
+    """
+    Precisamos **sempre** setar o media_type e o charset corretos no header
+    Content-Type
+
+    Se não fizermos isso o aiohttp, por exemplo, pode colocar `application/octet-stream`
+    e isso causa problemas quando fazemos, no client: `await response.json()`.
+    Mesmo o conteúdo **sendo** um JSON válido.
+    """
+    body = await request.json()
+    string = body["string"]
+    d = {"string": string}
+    res = json.dumps(d)
+
+    # return CharsetResource(string=string)
+    return web.Response(
+        body=res.encode("utf-16"),
+        headers={
+            "Content-Type": "application/vnd.charset.v1+json;charset=utf-16"
+        },
+    )

@@ -92,3 +92,19 @@ class AppTest(TestCase):
         async with self.client_context as client:
             resp = await client.get("/accounts/u")
             self.assertEqual(HTTPStatus.INTERNAL_SERVER_ERROR, resp.status)
+
+    async def test_resource_specific_charset(self):
+        async with self.client_context as client:
+            value = "✓"
+            resp = await client.get(
+                "/charsets/1",
+                json={"string": value},
+                headers={
+                    "Accept": "application/vnd.charset.v1+json;charset=utf-16"
+                },
+            )
+            self.assertEqual(HTTPStatus.OK, resp.status)
+            resp_data = await resp.json()
+            self.assertEqual(
+                value.encode("utf-16"), resp_data["string"].encode("utf-16")
+            )
