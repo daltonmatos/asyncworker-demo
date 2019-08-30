@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 from asynctest import TestCase
 
 from app.app import app
@@ -58,4 +60,14 @@ class AppTest(TestCase):
 
             self.assertEqual(
                 {"error": f"Unsuported media_type: {media_type}"}, resp_data
+            )
+
+    async def test_users_2_resource_with_status_code(self):
+        async with self.client_context as client:
+            resp = await client.get("/users/2")
+            self.assertEqual(HTTPStatus.ACCEPTED, resp.status)
+            resp_data = await resp.json()
+
+            self.assertEqual(
+                {"id": 2, "name": "Other User", "phone": "+5511..."}, resp_data
             )
