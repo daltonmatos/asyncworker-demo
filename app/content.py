@@ -3,7 +3,7 @@ from typing import Any, Dict, Type, get_type_hints
 
 from aiohttp import web
 
-from app.resources.base import Resource
+from app.resources.base import HTTPException, Resource
 from app.types.http import _HTTP
 from asyncworker.routes import call_http_handler
 
@@ -26,7 +26,12 @@ def content_negotiation(handler):
         if return_type:
             types_dict = build_return_type_dict(return_type)
 
-        result = await call_http_handler(request, handler)
+        try:
+            result = await call_http_handler(request, handler)
+        except HTTPException as http_exc:
+            status_code = types_dict.get(http_exc.__class__, HTTPStatus.OK)
+            return web.json_response(http_exc.dict(), status=status_code)
+
         if isinstance(result, Resource):
             status_code = types_dict.get(result.__class__, HTTPStatus.OK)
             if accept_header and not accept_header == "*/*":
