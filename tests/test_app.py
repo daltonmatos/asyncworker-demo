@@ -92,3 +92,39 @@ class AppTest(TestCase):
         async with self.client_context as client:
             resp = await client.get("/accounts/u")
             self.assertEqual(HTTPStatus.INTERNAL_SERVER_ERROR, resp.status)
+
+    async def test_resource_specific_charset(self):
+        async with self.client_context as client:
+            media_type = "application/vnd.charset.v1+json;charset=utf-16"
+            value = "✓"
+            resp = await client.get(
+                "/charsets/1",
+                json={"string": value},
+                headers={"Accept": media_type},
+            )
+            self.assertEqual(HTTPStatus.OK, resp.status)
+            self.assertEqual(media_type, resp.headers.get("Content-Type"))
+            resp_data = await resp.json()
+            self.assertEqual(
+                value.encode("utf-16"),
+                resp_data["other_string"].encode("utf-16"),
+            )
+
+    async def test_resource_unsuported_charset(self):
+        async with self.client_context as client:
+            charset = "utf-32"
+            media_type = "application/vnd.charset.v1+json"
+            value = "✓"
+            resp = await client.get(
+                "/charsets/1",
+                json={"string": value},
+                headers={"Accept": f"{media_type};charset={charset}"},
+            )
+            self.assertEqual(HTTPStatus.BAD_REQUEST, resp.status)
+            resp_data = await resp.json()
+            self.assertEqual(
+                {
+                    "error": f"Unsuported Charset for media_type {media_type}: {charset}"
+                },
+                resp_data,
+            )

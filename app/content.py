@@ -1,9 +1,9 @@
 from http import HTTPStatus
-from typing import Any, Dict, Type, get_type_hints
+from typing import get_type_hints
 
 from aiohttp import web
 
-from app.resources.base import HTTPException, Resource
+from app.resources.base import HTTPException, Resource, MediaType
 from app.types.http import _HTTP
 from asyncworker.routes import call_http_handler
 
@@ -34,17 +34,29 @@ def content_negotiation(handler):
         if isinstance(result, Resource):
             status_code = types_dict.get(result.__class__, HTTPStatus.OK)
             if accept_header and not accept_header == "*/*":
-                resource_class = result.media_types().get(accept_header)
-                if resource_class:
-                    return web.json_response(
-                        resource_class.transform_from(result).dict(),
+                media_type = accept_header.split(";")[0]
+                resource_spec = result.media_types().get(media_type)
+                if resource_spec:
+                    charset = accept_header.split("=")[1]
+                    if charset not in resource_spec.charsets:
+                        return web.json_response(
+                            {
+                                "error": f"Unsuported Charset for media_type {media_type}: {charset}"
+                            },
+                            status=HTTPStatus.BAD_REQUEST,
+                        )
+                    return web.Response(
+                        body=resource_spec.resource.transform_from(
+                            result
+                        ).serialize(MediaType.parse(accept_header)),
                         status=status_code,
+                        headers={"Content-Type": accept_header},
                     )
                 else:
                     # Accept Header não suportado
                     return web.json_response(
                         {"error": f"Unsuported media_type: {accept_header}"},
-                        status=400,
+                        status=HTTPStatus.BAD_REQUEST,
                     )
             return web.json_response(result.dict(), status=status_code)
         return result
