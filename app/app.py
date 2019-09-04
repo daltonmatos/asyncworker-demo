@@ -65,13 +65,5 @@ async def charsets(request: web.Request) -> CharsetResource:
     """
     body = await request.json()
     string = body["string"]
-    d = {"string": string}
-    res = json.dumps(d)
 
-    # return CharsetResource(string=string)
-    return web.Response(
-        body=res.encode("utf-16"),
-        headers={
-            "Content-Type": "application/vnd.charset.v1+json;charset=utf-16"
-        },
-    )
+    return CharsetResource(string=string)
