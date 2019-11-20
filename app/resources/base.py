@@ -1,4 +1,5 @@
 import sys
+from http import HTTPStatus
 from typing import Dict, Type, Generic, TypeVar
 
 from pydantic import BaseModel
@@ -26,3 +27,19 @@ class Resource(BaseModel):
     @staticmethod
     def media_types() -> Dict[str, Type[VersionedResource]]:
         return {}
+
+
+class HTTPException(Exception):
+    status = -1
+
+    error: str
+
+    def __init__(self, error: str) -> None:
+        self.error = error
+
+    def dict(self):
+        return {"error": self.error}
+
+
+class NotFoundException(HTTPException):
+    status = HTTPStatus.NOT_FOUND

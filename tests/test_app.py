@@ -71,3 +71,24 @@ class AppTest(TestCase):
             self.assertEqual(
                 {"id": 2, "name": "Other User", "phone": "+5511..."}, resp_data
             )
+
+    async def test_accounts_or_user_resource_with_status_code(self):
+        async with self.client_context as client:
+            resp = await client.get("/accounts/1")
+            self.assertEqual(HTTPStatus.OK, resp.status)
+            resp_data = await resp.json()
+
+            self.assertEqual({"id": 1, "name": "Account"}, resp_data)
+
+    async def test_accounts_raise_not_found_exception(self):
+        async with self.client_context as client:
+            resp = await client.get("/accounts/e")
+            self.assertEqual(HTTPStatus.NOT_FOUND, resp.status)
+            resp_data = await resp.json()
+
+            self.assertEqual({"error": "Resource not found"}, resp_data)
+
+    async def test_accounts_raise_uncaught_exception(self):
+        async with self.client_context as client:
+            resp = await client.get("/accounts/u")
+            self.assertEqual(HTTPStatus.INTERNAL_SERVER_ERROR, resp.status)
